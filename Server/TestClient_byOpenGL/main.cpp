@@ -71,16 +71,6 @@ GLvoid drawScene(GLvoid) {
 GLvoid Reshape(int w, int h) {
 	glViewport(0, 0, w, h);
 	glOrtho(-400, 400, -400, 400, -1, 1);
-
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
-	// 
-	// gluPerspective(60.0, w / h, 1, 200);
-	// glTranslated(0.0, 0.0, -800);
-	// 
-	// glEnable(GL_DEPTH_TEST);
-	// glMatrixMode(GL_MODELVIEW);
-	// glLoadIdentity();
 }
 void SendTimer(int value) {
 	// 송신 타이머

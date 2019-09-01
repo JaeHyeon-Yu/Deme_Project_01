@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="소스.cpp">
+    <ClCompile Include="logIn.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

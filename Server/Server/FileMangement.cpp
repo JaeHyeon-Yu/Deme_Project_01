@@ -16,6 +16,7 @@ void ImportFile(vector<Account>& v) {
 		inData >> ptr.password;
 		inData >> ptr.x;
 		inData >> ptr.y;
+		inData >> ptr.z;
 		v.emplace_back(ptr);
 	}
 	inSize.close();
@@ -33,7 +34,7 @@ void SaveFile(vector<Account>& v) {
 	ofstream outData("PlayerDate.dat");
 	for (int i = 0; i < fsize; ++i) {
 		outData << v[i].id << " " << v[i].password << " ";
-		outData << v[i].x << " " << v[i].y << endl;
+		outData << v[i].x << " " << v[i].y << " "<<v[i].z<< endl;
 	}
 
 	outSize.close();

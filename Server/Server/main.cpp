@@ -226,7 +226,7 @@ void ClientDiscoonect(const SOCKET& sock) {
 	int acckey = playerData[key].accIndex;
 	accInfo[acckey].x = playerData[key].x;
 	accInfo[acckey].y = playerData[key].y;
-	accInfo[acckey].y = playerData[key].z;
+	accInfo[acckey].z = playerData[key].z;
 
 	playerData[key].isConnect = false;
 	playerData[key].state = NONE;
@@ -240,10 +240,10 @@ void Control(const int& id, const PlayerState& state) {
 	// 플레이어를 이동시킴
 	switch (state) {
 	case MOVE_FRONT:
-		playerData[id].z += 10;
+		playerData[id].y += 10;
 		break;
 	case MOVE_BACK:
-		playerData[id].z -= 10;
+		playerData[id].y -= 10;
 		break;
 	case MOVE_RIGHT:
 		playerData[id].x += 10;
