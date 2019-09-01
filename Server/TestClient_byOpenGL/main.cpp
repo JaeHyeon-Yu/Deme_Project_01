@@ -27,11 +27,15 @@ int main(int argc, char* argv[]) {
 	sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	if (sock == INVALID_SOCKET) err_quit("WSASocket()");
 
+	char serverip[32];
+	cout << "Input Server's IP : ";
+	cin >> serverip;
+
 	// connect
 	SOCKADDR_IN server_addr;
 	ZeroMemory(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = inet_addr("192.168.10.30");
+	server_addr.sin_addr.s_addr = inet_addr(serverip);
 	server_addr.sin_port = htons(SERVERPORT);
 	retval = connect(sock, (SOCKADDR*)& server_addr, sizeof(server_addr));
 	if (retval == SOCKET_ERROR) err_display("connect()");

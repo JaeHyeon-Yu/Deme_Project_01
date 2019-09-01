@@ -1,6 +1,7 @@
 #pragma comment(lib, "ws2_32")
 #include "function.h"
 #include "define.h"
+void myIP();
 
 int users{ 0 };
 vector<Account>	accInfo;
@@ -9,6 +10,9 @@ Player	playerData[MAX_USER];
 
 int main() {
 	int retval;
+	
+	// ip 출력
+	myIP();
 
 	// 데이터 불러오기
 	ImportFile(accInfo);
@@ -254,4 +258,22 @@ void Control(const int& id, const PlayerState& state) {
 	default:
 		break;
 	}
+}
+void myIP() {
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	PHOSTENT hostinfo;
+	char hostname[50];
+	char ipaddr[50];
+	memset(hostname, 0, sizeof(hostname));
+	memset(ipaddr, 0, sizeof(ipaddr));
+
+	int nError = gethostname(hostname, sizeof(hostname));
+	if (nError == 0){
+		hostinfo = gethostbyname(hostname);
+		strcpy(ipaddr, inet_ntoa(*(struct in_addr*)hostinfo->h_addr_list[0]));
+	}
+	WSACleanup();
+	printf("This Computer's IP address : %s\n", ipaddr);
 }
