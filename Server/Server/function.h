@@ -4,12 +4,14 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include "..//TestClient_byOpenGL/player.h"
+
 #define BUFSIZE 512
 using namespace std;
 struct Account {
 	string id;
 	string password;
-	// position
+	int x, y, z;
 };
 struct SOCKETINFO {
 	OVERLAPPED overlapped;
@@ -19,9 +21,9 @@ struct SOCKETINFO {
 	char buf[BUFSIZE];
 };
 
-void ImportFile();
-void SaveFile();
+void ImportFile(vector<Account>& v);
+void SaveFile(vector<Account>& v);
 DWORD WINAPI WorkerThread(LPVOID arg);
 void ClientDiscoonect(const SOCKET& sock);
-void Control(const int id, const int state);
-
+void Control(const int& id, const PlayerState& state);
+void Client_LogIn(const SOCKET& sock, const int& clientId);

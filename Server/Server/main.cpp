@@ -3,13 +3,15 @@
 #include "define.h"
 
 int users{ 0 };
-vector<Account> accInfo;
+vector<Account>	accInfo;
+SOCKETINFO	clients[MAX_USER];
+Player	playerData[MAX_USER];
 
 int main() {
 	int retval;
 
 	// 데이터 불러오기
-	ImportFile();
+	ImportFile(accInfo);
 
 	// 플레이어 정보 초기화
 
@@ -60,6 +62,8 @@ int main() {
 		if (users >= MAX_USER) break;
 
 		// 클라이언트 id 배정
+		for (int i = 0; i < MAX_USER; ++i)
+			if (!playerData[i].isConnect) clientId = i;
 
 		// accept
 		client_sock = accept(listen_sock, (SOCKADDR*)& clientaddr, &addrlen);
@@ -68,61 +72,13 @@ int main() {
 			break;
 		}
 
-		LOGIN_STATE loginState{ NONE };
-		string id, password;
-		while (loginState != OK) {
-		int accIndex;
-		ZeroMemory(&id, sizeof(string));
-		ZeroMemory(&password, sizeof(string));
+		Client_LogIn(client_sock, clientId);
 
-		retval = recv(client_sock, (char*)& id, sizeof(string), 0);
-		if (retval == SOCKET_ERROR) err_display("recv");
-		retval = recv(client_sock, (char*)& password, sizeof(string), 0);
-		if (retval == SOCKET_ERROR) err_display("recv");
-
-		for (int i = 0; i < accInfo.size(); ++i) {
-			if (accInfo[i].id == id) {
-				if (accInfo[i].password == password) {
-					loginState = OK;
-					accIndex = i;
-					break;
-				}
-				loginState = ERR;
-				break;
-			}
-		}
-
-		if (loginState == NONE)
-			loginState = NEW;
-
-		switch (loginState) {
-		case OK:
-			// 기존 좌표를 받아오고 초기값을 설정해준다.
-
-
-			cout << "[Server] Client Access - " << id << "\t" << inet_ntoa(clientaddr.sin_addr) <<
-				" : " << ntohs(clientaddr.sin_port) << endl;
-			break;
-		case ERR:
-			break;
-		case NEW:
-			Account ptr;
-			ptr.id = id;
-			ptr.password = password;
-
-			accInfo.emplace_back(ptr);
-			break;
-		}
-		retval = send(client_sock, (char*)& loginState, sizeof(loginState), 0);
-		if (retval == SOCKET_ERROR) err_display("send");
-	}
-
-		// 전송
+		// 초기 데이터 전송
 		retval = send(client_sock, (char*)& clientId, sizeof(clientId), 0);
 		if (retval == SOCKET_ERROR) err_display("send");
-		// retval = send(client_sock, (char*)& players, sizeof(players), 0);
-		// if (retval == SOCKET_ERROR) err_display("send");
-		// 플레이어 전체 정보 보내기 (배열)
+		retval = send(client_sock, (char*)& playerData, sizeof(playerData), 0);
+		if (retval == SOCKET_ERROR) err_display("send");
 
 		// socket - iocp 연결
 		CreateIoCompletionPort((HANDLE)client_sock, hcp, client_sock, 0);
@@ -145,12 +101,15 @@ int main() {
 			if (WSAGetLastError() != ERROR_IO_PENDING) err_display("WSARecv()");
 			continue;
 		}
+
+		
 	}
 
 	WSACleanup();
 	return 0;
 }
 DWORD WINAPI WorkerThread(LPVOID arg) {
+	// 소켓 스레드 함수
 	HANDLE hcp = (HANDLE)arg;
 
 	int retval;
@@ -181,18 +140,118 @@ DWORD WINAPI WorkerThread(LPVOID arg) {
 			}
 			closesocket(ptr->sock);
 			ClientDiscoonect(ptr->sock);
-			cout << "[Server] Client 종료 : IP주소 : " << inet_ntoa(clientaddr.sin_addr) <<
-				"\t포트번호 : " << ntohs(clientaddr.sin_port) << endl;
+
+			int accKey = playerData[clientid].accIndex;
+			cout << "[Server] Client 종료 : " << accInfo[accKey].id << endl;
 			delete ptr;
 			continue;
 		}
-		////
+		
 		// 데이터 수신
 		retval = WSARecv(ptr->sock, &ptr->wsabuf, 1, &recvBytes, &flags, &ptr->overlapped, NULL);
 		if (retval == SOCKET_ERROR) {
 			if (WSAGetLastError() != WSA_IO_PENDING) err_display("WSARecv()");
 		}
 
-		// 데이터 송신부
+		clientid = (int)ptr->wsabuf.buf[0];
+		PlayerState state = (PlayerState)ptr->wsabuf.buf[1];
+		Control(clientid, state);
+
+		retval = send(clients[clientid].sock, (char*)& playerData, sizeof(playerData), 0);
+		if (retval == SOCKET_ERROR) err_display("send()");
+	}
+}
+void Client_LogIn(const SOCKET& sock, const int& clientId) {
+	// 클라이언트에서 id와 password를 입력받아 로그인한다.
+	LOGIN_STATE loginState{ OFF };
+	string id, password;
+	int retval;
+
+	while (loginState != OK) {
+		int accIndex;
+		ZeroMemory(&id, sizeof(string));
+		ZeroMemory(&password, sizeof(string));
+
+		retval = recv(sock, (char*)& id, sizeof(string), 0);
+		if (retval == SOCKET_ERROR) err_display("recv");
+		retval = recv(sock, (char*)& password, sizeof(string), 0);
+		if (retval == SOCKET_ERROR) err_display("recv");
+
+		for (int i = 0; i < accInfo.size(); ++i)
+			if (accInfo[i].id == id) {
+				if (accInfo[i].password == password) {
+					loginState = OK;
+					accIndex = i;
+				}
+				else loginState = ERR;
+				break;
+			}
+		if (loginState == OFF)
+			loginState = NEW;
+
+		switch (loginState) {
+		case OK:
+			// 기존 좌표를 받아오고 초기값을 설정해준다.
+			playerData[clientId].x = accInfo[accIndex].x;
+			playerData[clientId].y = accInfo[accIndex].y;
+			playerData[clientId].z = accInfo[accIndex].z;
+			playerData[clientId].accIndex = accIndex;
+			playerData[clientId].state = IDLE;
+			playerData[clientId].isConnect = true;
+			clients[clientId].sock = sock;
+			cout << "[Server] Client Access - " << id << endl;
+			break;
+		case ERR:
+			break;
+		case NEW:
+			Account ptr;
+			ptr.id = id;
+			ptr.password = password;
+			ptr.x = ptr.y = ptr.z = 0;
+			accInfo.emplace_back(ptr);
+			break;
+		}
+		retval = send(sock, (char*)& loginState, sizeof(loginState), 0);
+		if (retval == SOCKET_ERROR) err_display("send");
+	}
+}
+void ClientDiscoonect(const SOCKET& sock) {
+	// Client의 접속을 끊고 그 자리를 초기화
+	int key;
+	for (int i = 0; i < MAX_USER; ++i)
+		if (sock == clients[i].sock) {
+			key = i;
+			break;
+		}
+	int acckey = playerData[key].accIndex;
+	accInfo[acckey].x = playerData[key].x;
+	accInfo[acckey].y = playerData[key].y;
+	accInfo[acckey].y = playerData[key].z;
+
+	playerData[key].isConnect = false;
+	playerData[key].state = NONE;
+	playerData[key].x = 0;
+	playerData[key].y = 0;
+	playerData[key].z = 0;
+	users--;
+	SaveFile(accInfo);
+}
+void Control(const int& id, const PlayerState& state) {
+	// 플레이어를 이동시킴
+	switch (state) {
+	case MOVE_FRONT:
+		playerData[id].z += 10;
+		break;
+	case MOVE_BACK:
+		playerData[id].z -= 10;
+		break;
+	case MOVE_RIGHT:
+		playerData[id].x += 10;
+		break;
+	case MOVE_LEFT:
+		playerData[id].x -= 10;
+		break;
+	default:
+		break;
 	}
 }

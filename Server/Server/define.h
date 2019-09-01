@@ -6,13 +6,7 @@
 
 
 enum LOGIN_STATE {
-	NONE, OK, ERR, NEW
-};
-
-struct Account {
-	std::string id;
-	std::string password;
-	// ÁÂÇ¥
+	OFF, OK, ERR, NEW
 };
 
 void err_display(const char* msg);
