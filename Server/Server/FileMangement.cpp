@@ -27,7 +27,7 @@ void SaveFile(vector<Account>& v) {
 
 	// 먼저 컨테이너의 크기를 txt로 저장한다.
 	ofstream outSize("AcccountNum.txt");
-	unsigned int fsize{ v.size() };
+	unsigned int fsize{ (unsigned int)v.size() };
 	outSize << fsize;
 
 	// 컨테이너의 내용을 저장

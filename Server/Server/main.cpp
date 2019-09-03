@@ -129,7 +129,7 @@ DWORD WINAPI WorkerThread(LPVOID arg) {
 		SOCKETINFO* ptr;
 
 		retval = GetQueuedCompletionStatus(hcp, &cbTransferred,
-			(LPDWORD)& client_sock, (LPOVERLAPPED*)& ptr, INFINITE);
+			(PULONG_PTR)& client_sock, (LPOVERLAPPED*)& ptr, INFINITE);
 
 		// 클라정보 얻기
 		SOCKADDR_IN clientaddr;
