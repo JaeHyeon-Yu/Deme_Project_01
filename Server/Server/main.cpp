@@ -1,6 +1,9 @@
 #pragma comment(lib, "ws2_32")
 #include "function.h"
 #include "define.h"
+#include "..//..//TestProject/Player.h"
+
+
 void myIP();
 
 int users{ 0 };
@@ -8,9 +11,12 @@ vector<Account>	accInfo;
 SOCKETINFO	clients[MAX_USER];
 Player	playerData[MAX_USER];
 
+// directX 클라이언트 플레이어 구조체
+CPlayer* cPlayers = new CPlayer[MAX_USER];
+
 int main() {
 	int retval;
-	
+	cout << sizeof(Packet) << endl;
 	// ip 출력
 	myIP();
 
@@ -129,7 +135,10 @@ DWORD WINAPI WorkerThread(LPVOID arg) {
 		SOCKETINFO* ptr;
 
 		retval = GetQueuedCompletionStatus(hcp, &cbTransferred,
-			(PULONG_PTR)& client_sock, (LPOVERLAPPED*)& ptr, INFINITE);
+			reinterpret_cast<LPDWORD>(&client_sock), (LPOVERLAPPED*)& ptr, INFINITE);
+		// 3번째 인자 (LPDWORD)& client_sock를 넣으면 PC에서는 에러가 발생하지 않는데 놋북에서는 에러가 발생한다.
+		// x86에서는 에러가 발생하지 않으나 x64에서 에러 발생함
+		// 추후 x64에서도 정상적으로 실행되도록 수정할것
 
 		// 클라정보 얻기
 		SOCKADDR_IN clientaddr;
@@ -276,4 +285,11 @@ void myIP() {
 	}
 	WSACleanup();
 	printf("This Computer's IP address : %s\n", ipaddr);
+}
+void SetCPlayer(const Packet& p) {
+	// 전송받은 데이터를 CPlayer 객체에 삽입한다.
+	short clientId{ p.id };
+
+	cPlayers[clientId].SetPosition(p.m_xmf3Position);
+	
 }

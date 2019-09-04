@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include "..//TestClient_byOpenGL/player.h"
+#include "define.h"
 
 #define BUFSIZE 512
 using namespace std;
@@ -27,3 +28,5 @@ DWORD WINAPI WorkerThread(LPVOID arg);
 void ClientDiscoonect(const SOCKET& sock);
 void Control(const int& id, const PlayerState& state);
 void Client_LogIn(const SOCKET& sock, const int& clientId);
+
+void SetCPlayer(const Packet& p);
