@@ -1,7 +1,7 @@
 #pragma comment(lib, "ws2_32")
 #include "function.h"
 #include "define.h"
-#include "..//..//TestProject/Player.h"
+//#include "..//..//TestProject/Player.h"
 
 
 void myIP();
@@ -12,7 +12,7 @@ SOCKETINFO	clients[MAX_USER];
 Player	playerData[MAX_USER];
 
 // directX 클라이언트 플레이어 구조체
-CPlayer* cPlayers = new CPlayer[MAX_USER];
+//CPlayer* cPlayers = new CPlayer[MAX_USER];
 
 int main() {
 	int retval;
@@ -81,14 +81,13 @@ int main() {
 			err_display("accept()");
 			break;
 		}
-
-		Client_LogIn(client_sock, clientId);
-
-		// 초기 데이터 전송
-		retval = send(client_sock, (char*)& clientId, sizeof(clientId), 0);
-		if (retval == SOCKET_ERROR) err_display("send");
-		retval = send(client_sock, (char*)& playerData, sizeof(playerData), 0);
-		if (retval == SOCKET_ERROR) err_display("send");
+		// Client_LogIn(client_sock, clientId);
+		// 
+		// // 초기 데이터 전송 by GL
+		// retval = send(client_sock, (char*)& clientId, sizeof(clientId), 0);
+		// if (retval == SOCKET_ERROR) err_display("send");
+		// retval = send(client_sock, (char*)& playerData, sizeof(playerData), 0);
+		// if (retval == SOCKET_ERROR) err_display("send");
 
 		// socket - iocp 연결
 		CreateIoCompletionPort((HANDLE)client_sock, hcp, client_sock, 0);
@@ -179,12 +178,12 @@ void Client_LogIn(const SOCKET& sock, const int& clientId) {
 	LOGIN_STATE loginState{ OFF };
 	string id, password;
 	int retval;
-
+	
 	while (loginState != OK) {
 		int accIndex;
 		ZeroMemory(&id, sizeof(string));
 		ZeroMemory(&password, sizeof(string));
-
+		
 		retval = recv(sock, (char*)& id, sizeof(string), 0);
 		if (retval == SOCKET_ERROR) err_display("recv");
 		retval = recv(sock, (char*)& password, sizeof(string), 0);
@@ -290,6 +289,6 @@ void SetCPlayer(const Packet& p) {
 	// 전송받은 데이터를 CPlayer 객체에 삽입한다.
 	short clientId{ p.id };
 
-	cPlayers[clientId].SetPosition(p.m_xmf3Position);
+	//cPlayers[clientId].SetPosition(p.m_xmf3Position);
 	
 }

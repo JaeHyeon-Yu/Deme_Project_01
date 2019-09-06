@@ -1,5 +1,5 @@
 #include "Timer.h"
-
+#include "communication.h"
 CGameTimer::CGameTimer()
 {
 	if (::QueryPerformanceFrequency((LARGE_INTEGER*)& m_nPerformanceFrequency))
@@ -27,8 +27,8 @@ CGameTimer::~CGameTimer()
 {
 }
 
-void CGameTimer::Tick(float fLockFPS)
-{
+void CGameTimer::Tick(float fLockFPS)		// 여기서 데이터 통신
+{	
 	if (m_bHardwareHasPerformanceCounter)
 	{
 		::QueryPerformanceCounter((LARGE_INTEGER*)& m_nCurrentTime);

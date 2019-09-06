@@ -10,9 +10,9 @@ void SetSocket(SOCKET& sock) {
 	// 소켓을 설정하고 Server와 연결해준다.
 	
 	int retval;
-	char serverip[32];
-	cout << "Input Server's IP : ";
-	cin >> serverip;
+	// char serverip[32];
+	// cout << "Input Server's IP : ";
+	// cin >> serverip;
 
 	// 윈속 초기화
 	WSAData wsa;
@@ -26,18 +26,23 @@ void SetSocket(SOCKET& sock) {
 	SOCKADDR_IN server_addr;
 	ZeroMemory(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = inet_addr(serverip);
+	server_addr.sin_addr.s_addr = inet_addr(석준이집);
 	server_addr.sin_port = htons(SERVERPORT);
-	retval = connect(sock, (SOCKADDR*)& server_addr, sizeof(server_addr));
+	retval = connect(sock, (SOCKADDR*)& server_addr, sizeof(server_addr));	
 	if (retval == SOCKET_ERROR) err_display("connect");
 
 	// Log-in 넣을 부분
 
 	// 초기 데이터 전송해줄 부분
 	// 일단 CPlayer 객체를 전송받는다.
-	CPlayer* temp = new CPlayer[MAX_USER];
-	retval = recv(sock, (char*)& temp, sizeof(temp), 0);
-	if (retval == SOCKET_ERROR) err_display("send");
+	// string id = "yujae";
+	// string password = "1234";
+	// send(sock, (char*)& id, sizeof(id), 0);
+	// send(sock, (char*)& password, sizeof(password), 0);
+
+	// CPlayer* temp = new CPlayer[MAX_USER];
+	// retval = recv(sock, (char*)& temp, sizeof(temp), 0);
+	// if (retval == SOCKET_ERROR) err_display("send");
 }
 void SendPacket(const SOCKET& sock) {
 	// 서버에 보낼 패킷 데이터를 만들어서 보내준다.
@@ -67,4 +72,9 @@ void RecvPacket(const SOCKET& sock) {
 }
 void SetPacket(Packet& pack, const CPlayer& p) {
 	// 패킷을 사용자 데이터로 설정해준다.
+}
+void err_quit(const char* msg) {
+}
+void err_display(const char* msg) {
+
 }
