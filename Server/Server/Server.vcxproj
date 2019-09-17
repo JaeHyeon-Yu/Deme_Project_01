@@ -123,13 +123,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\TestProject\Camera.cpp" />
+    <ClCompile Include="..\..\TestProject\framework.cpp" />
+    <ClCompile Include="..\..\TestProject\GameObject.cpp" />
+    <ClCompile Include="..\..\TestProject\Mesh.cpp" />
+    <ClCompile Include="..\..\TestProject\Player.cpp" />
+    <ClCompile Include="..\..\TestProject\Shader.cpp" />
     <ClCompile Include="FileMangement.cpp" />
-    <ClCompile Include="function.cpp" />
+    <ClCompile Include="ErrMsg.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h" />
     <ClInclude Include="define.h" />
+    <ClInclude Include="packet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

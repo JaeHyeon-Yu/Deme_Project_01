@@ -1,10 +1,10 @@
 #include "communication.h"
-#include "..//Server/Server/define.h"
-#include "Player.h"
 #include <iostream>
 using namespace std;
+void err_quit(const char* msg);
+void err_display(const char* msg);
 
-void SetPacket(const CPlayer& p);
+unsigned short clientId{};
 
 void SetSocket(SOCKET& sock) {
 	// 소켓을 설정하고 Server와 연결해준다.
@@ -26,7 +26,7 @@ void SetSocket(SOCKET& sock) {
 	SOCKADDR_IN server_addr;
 	ZeroMemory(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = inet_addr(석준이집);
+	server_addr.sin_addr.s_addr = inet_addr(우리집);
 	server_addr.sin_port = htons(SERVERPORT);
 	retval = connect(sock, (SOCKADDR*)& server_addr, sizeof(server_addr));	
 	if (retval == SOCKET_ERROR) err_display("connect");
@@ -40,38 +40,51 @@ void SetSocket(SOCKET& sock) {
 	// send(sock, (char*)& id, sizeof(id), 0);
 	// send(sock, (char*)& password, sizeof(password), 0);
 
+	// Client ID 수신
+	// retval = recv(sock, (char*)& clientId, sizeof(clientId), 0);
+	// if (retval == SOCKET_ERROR) err_display("recv");
+
 	// CPlayer* temp = new CPlayer[MAX_USER];
 	// retval = recv(sock, (char*)& temp, sizeof(temp), 0);
 	// if (retval == SOCKET_ERROR) err_display("send");
 }
-void SendPacket(const SOCKET& sock) {
+void SendPacket(const SOCKET& sock, CPlayer *cp) {
 	// 서버에 보낼 패킷 데이터를 만들어서 보내준다.
-	int clientid = 0;
 	int retval;
-
-	Packet* pack = new Packet;
-	pack->id = clientid;
-	// 패킷 저장하기...
 	
+	// 플레이어의 위치 정보를 담은 패킷을 만든다.
+	CS_MOVE_PACKET *pack = new CS_MOVE_PACKET;
+	pack->size = sizeof(CS_MOVE_PACKET);
+	pack->type = MOVE_POS;
+	pack->id = clientId;
+	pack->position = cp->GetPosition();
 	// 패킷 전송
-	retval = send(sock, (char*)& pack, sizeof(pack), 0);
+	retval = send(sock, (char*)& pack, pack->size, 0);
 	if (retval == SOCKET_ERROR) err_display("send");
-	delete pack;
 }
-void RecvPacket(const SOCKET& sock) {
+void RecvPacket(const SOCKET& sock, CPlayer*& cp) {
 	// 서버에서 패킷 데이터를 받아온다.
 	int retval;
+	char buf[512];
 
-	Packet* pack = new Packet;
-	retval = recv(sock, (char*)& pack, sizeof(pack), 0);
-	if (retval == SOCKET_ERROR) err_display("recv");
-
-	// 받은 패킷으로 데이터를 처리해준다.
-
-	delete pack;
+	for (int i = 0; i < MAX_USER; ++i) {
+		ZeroMemory(buf, sizeof(buf));
+		retval = recv(sock, buf, sizeof(buf), 0);
+		if (retval == SOCKET_ERROR) err_display("recv");
+		PacketProcess(buf, cp);
+	}
 }
-void SetPacket(Packet& pack, const CPlayer& p) {
-	// 패킷을 사용자 데이터로 설정해준다.
+void PacketProcess(char* buf, CPlayer*& cp){
+	// 패킷 관리
+	buf[(int)buf[0]] = '\0';
+	int packetType = (int)buf[1];
+
+	switch (packetType) {		
+	case MOVE_POS:
+		SC_MOVE_PACKET* scMove = reinterpret_cast<SC_MOVE_PACKET*>(buf);
+		cp->SetPosition(scMove->position);
+		break;
+	}
 }
 void err_quit(const char* msg) {
 }

@@ -1,6 +1,6 @@
 #pragma comment(lib, "ws2_32")
 #include <iostream>
-#include "freeglut.h"
+#include <gl/freeglut.h>
 #include "player.h"
 #include "function.h"
 #include "../Server/define.h"

@@ -2,21 +2,20 @@
 #include "function.h"
 #include "define.h"
 //#include "..//..//TestProject/Player.h"
-
-
 void myIP();
 
 int users{ 0 };
 vector<Account>	accInfo;
 SOCKETINFO	clients[MAX_USER];
 Player	playerData[MAX_USER];
-
+XMFLOAT3 playerPosition[MAX_USER];
 // directX 클라이언트 플레이어 구조체
-//CPlayer* cPlayers = new CPlayer[MAX_USER];
+// CPlayer* cPlayers = new CPlayer[MAX_USER];
 
 int main() {
+	
 	int retval;
-	cout << sizeof(Packet) << endl;
+	cout << sizeof(CPlayer);
 	// ip 출력
 	myIP();
 
@@ -164,13 +163,34 @@ DWORD WINAPI WorkerThread(LPVOID arg) {
 		if (retval == SOCKET_ERROR) {
 			if (WSAGetLastError() != WSA_IO_PENDING) err_display("WSARecv()");
 		}
-
-		clientid = (int)ptr->wsabuf.buf[0];
-		PlayerState state = (PlayerState)ptr->wsabuf.buf[1];
-		Control(clientid, state);
-
-		retval = send(clients[clientid].sock, (char*)& playerData, sizeof(playerData), 0);
-		if (retval == SOCKET_ERROR) err_display("send()");
+		
+		ZeroMemory(&recvBuf, BUFSIZE);
+		memcpy(recvBuf, ptr->wsabuf.buf, ptr->wsabuf.len);
+		ProcessPacket(recvBuf);
+		
+		// for (int i = 0; i < MAX_USER; ++i) {
+		// 	// 패킷 생성해서 send
+		// 	SC_MOVE_PACKET scMove;
+		// 	scMove.type = MOVE_POS;
+		// 	scMove.size = sizeof(scMove);
+		// 	scMove.id = clientid;
+		// 	scMove.position = playerPosition[i];
+		// 
+		// 	retval = send(ptr->sock, (char*)& scMove, scMove.size, 0);
+		// 	if (retval == SOCKET_ERROR) err_display("send");
+		// }
+		//CPlayer* cp = (CPlayer*)recvBuf;
+		//auto pos = cp->GetPosition();
+		//cout << pos.x << " " << pos.y << " " << pos.z << endl;
+		//
+		//CPlayer* cc = new CPlayer[2];
+		//send(ptr->sock, (char*)& cc, sizeof(cc), 0);
+		// clientid = (int)ptr->wsabuf.buf[0];
+		// PlayerState state = (PlayerState)ptr->wsabuf.buf[1];
+		// Control(clientid, state);
+		
+		// retval = send(clients[clientid].sock, (char*)& playerData, sizeof(playerData), 0);
+		// if (retval == SOCKET_ERROR) err_display("send()");
 	}
 }
 void Client_LogIn(const SOCKET& sock, const int& clientId) {
@@ -285,10 +305,19 @@ void myIP() {
 	WSACleanup();
 	printf("This Computer's IP address : %s\n", ipaddr);
 }
-void SetCPlayer(const Packet& p) {
-	// 전송받은 데이터를 CPlayer 객체에 삽입한다.
-	short clientId{ p.id };
-
-	//cPlayers[clientId].SetPosition(p.m_xmf3Position);
+void ProcessPacket(char* buf) {
+	// 패킷 관리
+	buf[(int)buf[0]] = '\0';
+	int packetType = (int)buf[1];
 	
+	switch (packetType) {
+	case MOVE_POS:
+		CS_MOVE_PACKET* csMove = reinterpret_cast<CS_MOVE_PACKET*>(buf);
+		playerPosition[csMove->id] = csMove->position;
+		auto pos = csMove->position;
+		cout << pos.x << " " << pos.y << " " << pos.z << endl;
+		
+		//send(clients[csMove->id].sock, (char*)& csMove, csMove->size, 0);
+		break;
+	}
 }

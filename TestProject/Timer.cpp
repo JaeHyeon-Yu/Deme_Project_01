@@ -1,5 +1,8 @@
 #include "Timer.h"
 #include "communication.h"
+#include "GameFramework.h"
+extern SOCKET sock;
+extern CGameFramework gGameFramework;
 CGameTimer::CGameTimer()
 {
 	if (::QueryPerformanceFrequency((LARGE_INTEGER*)& m_nPerformanceFrequency))
@@ -27,8 +30,13 @@ CGameTimer::~CGameTimer()
 {
 }
 
-void CGameTimer::Tick(float fLockFPS)		// 여기서 데이터 통신
+void CGameTimer::Tick(float fLockFPS)		
 {	
+	// 데이터 통신
+	// CPlayer* p = new CPlayer;
+	SendPacket(sock, gGameFramework.m_pPlayer);
+	// RecvPacket(sock, p); 
+
 	if (m_bHardwareHasPerformanceCounter)
 	{
 		::QueryPerformanceCounter((LARGE_INTEGER*)& m_nCurrentTime);
